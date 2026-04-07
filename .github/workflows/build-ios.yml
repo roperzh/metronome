@@ -1,0 +1,52 @@
+name: Build iOS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate native project
+        run: npx expo prebuild --platform ios --no-install
+
+      - name: Install CocoaPods dependencies
+        working-directory: ios
+        run: pod install
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: pods-
+
+      - name: Build for simulator (unsigned)
+        run: |
+          xcodebuild \
+            -workspace ios/testapp.xcworkspace \
+            -scheme testapp \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: testapp-ios-simulator
+          path: build/Build/Products/Release-iphonesimulator/testapp.app
