@@ -115,16 +115,28 @@ const accentSamples = generateClick({
   decayRate:  80,
 });
 
+// Subdivision click: shorter, quieter, lower pitch – clearly distinct from beat clicks
+const subSamples = generateClick({
+  sampleRate: SAMPLE_RATE,
+  durationMs: 30,     // shorter burst (~30 ms)
+  frequency:  800,    // Hz  – lower pitch, less prominent
+  amplitude:  0.4,    // softer
+  decayRate:  80,
+});
+
 // --- Write files -------------------------------------------------------------
 
 const assetsDir = path.join(__dirname, '..', 'assets');
 
 const clickPath  = path.join(assetsDir, 'click.wav');
 const accentPath = path.join(assetsDir, 'click-accent.wav');
+const subPath    = path.join(assetsDir, 'click-sub.wav');
 
 fs.writeFileSync(clickPath,  buildWav(clickSamples,  SAMPLE_RATE));
 fs.writeFileSync(accentPath, buildWav(accentSamples, SAMPLE_RATE));
+fs.writeFileSync(subPath,    buildWav(subSamples,    SAMPLE_RATE));
 
 console.log(`Created: ${clickPath}`);
 console.log(`Created: ${accentPath}`);
+console.log(`Created: ${subPath}`);
 console.log('Done.');
